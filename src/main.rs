@@ -1,4 +1,6 @@
 use std::env;
+use std::path::Path;
+use std::ffi::OsStr;
 
 fn exit(result: Result<String, String>) {
     match result {
@@ -13,18 +15,30 @@ fn exit(result: Result<String, String>) {
     }
 }
 
+fn arg_files() -> Vec<String> {
+    return env::args().skip(1).collect();
+}
+
+fn app_name() -> Option<String> {
+    return env::args().next()
+        .as_ref()
+        .map(Path::new)
+        .and_then(Path::file_name)
+        .and_then(OsStr::to_str)
+        .map(String::from)
+}
+
 fn main() {
-    let args: Vec<String> = env::args().collect();
-    
-    if args.len() < 2 {
-        match args.get(0) {
+    let files: Vec<String> = arg_files();
+
+    if files.is_empty() {
+        match app_name() {
             Some(p) => exit(Err::<String, String>(format!("Usage: {} [FILE]...", p))),
             None => exit(Err::<String, String>("Usage: rusttail [FILE]...".to_string())),
         }
-        
     }
 
-    for x in args.iter().skip(1) {
+    for x in files {
         println!("{}", x);
     }
 }
