@@ -2,6 +2,10 @@
 
 I am recreating tail using Rust to study the language.
 
+# Rust docs
+
+https://doc.rust-lang.org/rust-by-example/index.html
+
 # tail manual
 
 ```

@@ -3,7 +3,7 @@ pub mod parser {
     use std::ffi::OsStr;
     use std::path::Path;
 
-    pub fn files() -> Vec<String> {
+    pub fn file_paths() -> Vec<String> {
         return env::args().skip(1).collect();
     }
 
