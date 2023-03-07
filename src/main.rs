@@ -1,7 +1,6 @@
 mod argparse;
 mod file_reader;
 
-use std::fs::File;
 use argparse::parser;
 use file_reader::buffered_reader;
 use crate::file_reader::buffered_reader::FileReader;
@@ -34,8 +33,15 @@ fn main() {
     }
 
     for file_name in files {
-        let mut reader: FileReader = buffered_reader::create(&file_name);
+        let mut reader =  match buffered_reader::create(&file_name) {
+            Ok(reader) => reader,
+            Err(error) => {
+                exit(Err::<String, String>(error.message.to_string()));
+                return;
+            },
+        };
         reader.next();
         println!("{}", file_name);
+
     }
 }

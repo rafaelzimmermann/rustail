@@ -1,4 +1,5 @@
 pub mod buffered_reader {
+    use std::fmt::{Debug, Display};
     use std::path::Path;
 
     const DEFAULT_BUFFER_SIZE: i32 = 1024;
@@ -9,12 +10,22 @@ pub mod buffered_reader {
         buffer_size: i32,
     }
 
-    pub fn create(file_name: &String) -> FileReader {
-        return FileReader {
+    pub struct FileReaderError {
+        pub(crate) message: String,
+    }
+
+    pub fn create(file_path: &String) -> Result<FileReader, FileReaderError> {
+        if !Path::new(file_path).exists() {
+            let result = Err(FileReaderError{
+                message: "File does not exits.".parse().unwrap(),
+            });
+            return result
+        }
+        return Ok(FileReader {
             pos: 0,
-            file_path: file_name.clone(),
+            file_path: file_path.clone(),
             buffer_size: DEFAULT_BUFFER_SIZE,
-        };
+        });
     }
 
     impl FileReader {
