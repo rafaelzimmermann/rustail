@@ -4,6 +4,8 @@ pub mod buffered_reader {
     use std::path::Path;
     use std::io::Read;
     use std::io::BufRead;
+    use std::io::Seek;
+    use std::io::SeekFrom;
     
 
     // Memory page size
@@ -44,11 +46,13 @@ pub mod buffered_reader {
         pub fn next(&mut self) -> Result<&[u8], FileReaderError> {
             let metadata = self.file.metadata().unwrap();
             let next_pos = self.pos + (self.buffer_size as i32);
+            self.file.seek(SeekFrom::Start(self.pos.try_into().unwrap()));
             let n = self.file.read(&mut self.buffer).unwrap();
-            self.pos = next_pos;
-            if n > 0 {
+            if n > 0 && self.pos < metadata.len().try_into().unwrap() {
+                self.pos = next_pos;
                 return Ok(&self.buffer[..n]);
             }
+            
             return Err(FileReaderError{
                 message: "EOF".parse().unwrap(),
             });

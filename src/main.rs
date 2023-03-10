@@ -47,12 +47,13 @@ fn main() {
                 return;
             },
         };
-        let result = reader.next();
         println!("{}\n", file_name);
-        match result {
-            Ok(r) => print_buffer(r),
-            Err(v) => return,
+        loop {
+            let result = reader.next();
+            match result {
+                Ok(r) => print_buffer(r),
+                Err(_) => exit(Ok("".to_string())), // TODO: Handle error
+            }
         }
-
     }
 }
