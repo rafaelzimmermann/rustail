@@ -1,13 +1,21 @@
 pub mod buffered_reader {
     use std::fmt::{Debug, Display};
+    use std::fs::File;
     use std::path::Path;
+    use std::io::Read;
+    use std::io::BufRead;
+    
 
-    const DEFAULT_BUFFER_SIZE: i32 = 1024;
+    // Memory page size
+    // $ getconf -a | grep PAGESIZE
+    const DEFAULT_BUFFER_SIZE: usize = 4906;
 
     pub struct FileReader {
         pos: i32,
+        buffer: Vec<u8>,
+        buffer_size: usize,
         file_path: String,
-        buffer_size: i32,
+        file: File,
     }
 
     pub struct FileReaderError {
@@ -21,19 +29,29 @@ pub mod buffered_reader {
             });
             return result
         }
+        let mut file = File::open(file_path).unwrap();
+
         return Ok(FileReader {
             pos: 0,
-            file_path: file_path.clone(),
+            buffer: *Box::new(vec![0u8; DEFAULT_BUFFER_SIZE]),
             buffer_size: DEFAULT_BUFFER_SIZE,
+            file_path: file_path.clone(),
+            file,
         });
     }
 
     impl FileReader {
-        pub fn next(&mut self) -> &str {
-            let next_pos = self.pos + self.buffer_size;
-            // Read buffer size
+        pub fn next(&mut self) -> Result<&[u8], FileReaderError> {
+            let metadata = self.file.metadata().unwrap();
+            let next_pos = self.pos + (self.buffer_size as i32);
+            let n = self.file.read(&mut self.buffer).unwrap();
             self.pos = next_pos;
-            return "";
+            if n > 0 {
+                return Ok(&self.buffer[..n]);
+            }
+            return Err(FileReaderError{
+                message: "EOF".parse().unwrap(),
+            });
         }
     }
 

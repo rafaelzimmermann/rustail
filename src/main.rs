@@ -22,6 +22,13 @@ fn warning(message: String) {
     eprintln!("Warning: {}", message);
 }
 
+fn print_buffer(b: &[u8]) {
+    let s = match std::str::from_utf8(b) {
+        Ok(v) => println!("{}", v),
+        Err(e) => return,
+    };
+}
+
 fn main() {
     let files: Vec<String> = parser::file_paths();
 
@@ -40,8 +47,12 @@ fn main() {
                 return;
             },
         };
-        reader.next();
-        println!("{}", file_name);
+        let result = reader.next();
+        println!("{}\n", file_name);
+        match result {
+            Ok(r) => print_buffer(r),
+            Err(v) => return,
+        }
 
     }
 }
