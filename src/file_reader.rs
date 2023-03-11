@@ -1,9 +1,7 @@
 pub mod buffered_reader {
-    use std::fmt::{Debug, Display};
     use std::fs::File;
     use std::path::Path;
     use std::io::Read;
-    use std::io::BufRead;
     use std::io::Seek;
     use std::io::SeekFrom;
     
@@ -13,10 +11,9 @@ pub mod buffered_reader {
     const DEFAULT_BUFFER_SIZE: usize = 4906;
 
     pub struct FileReader {
-        pos: i32,
+        pos: u64,
         buffer: Vec<u8>,
         buffer_size: usize,
-        file_path: String,
         file: File,
     }
 
@@ -31,13 +28,12 @@ pub mod buffered_reader {
             });
             return result
         }
-        let mut file = File::open(file_path).unwrap();
+        let file = File::open(file_path).unwrap();
 
         return Ok(FileReader {
             pos: 0,
             buffer: *Box::new(vec![0u8; DEFAULT_BUFFER_SIZE]),
             buffer_size: DEFAULT_BUFFER_SIZE,
-            file_path: file_path.clone(),
             file,
         });
     }
@@ -45,8 +41,15 @@ pub mod buffered_reader {
     impl FileReader {
         pub fn next(&mut self) -> Result<&[u8], FileReaderError> {
             let metadata = self.file.metadata().unwrap();
-            let next_pos = self.pos + (self.buffer_size as i32);
-            self.file.seek(SeekFrom::Start(self.pos.try_into().unwrap()));
+            let next_pos = self.pos + (self.buffer_size as u64);
+            match self.file.seek(SeekFrom::Start(self.pos)) {
+                Ok(_) => {},
+                Err(v) => { 
+                    return Err(FileReaderError{
+                        message: format!("{}", v),
+                    });
+                },
+            }
             let n = self.file.read(&mut self.buffer).unwrap();
             if n > 0 && self.pos < metadata.len().try_into().unwrap() {
                 self.pos = next_pos;

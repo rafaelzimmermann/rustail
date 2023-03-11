@@ -1,9 +1,8 @@
-mod argparse;
+mod arg_parser;
 mod file_reader;
 
-use argparse::parser;
+use arg_parser::parser;
 use file_reader::buffered_reader;
-use crate::file_reader::buffered_reader::FileReader;
 
 fn exit(result: Result<String, String>) {
     match result {
@@ -18,14 +17,10 @@ fn exit(result: Result<String, String>) {
     }
 }
 
-fn warning(message: String) {
-    eprintln!("Warning: {}", message);
-}
-
 fn print_buffer(b: &[u8]) {
-    let s = match std::str::from_utf8(b) {
+    match std::str::from_utf8(b) {
         Ok(v) => println!("{}", v),
-        Err(e) => return,
+        Err(_) => return,
     };
 }
 
