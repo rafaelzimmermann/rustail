@@ -9,11 +9,11 @@ fn exit(result: Result<String, String>) {
         Ok(v) => {
             println!("{}", v);
             std::process::exit(0)
-        },
+        }
         Err(e) => {
             eprintln!("{}", e);
             std::process::exit(1);
-        },
+        }
     }
 }
 
@@ -30,17 +30,19 @@ fn main() {
     if files.is_empty() {
         match parser::app_name() {
             Some(p) => exit(Err::<String, String>(format!("Usage: {} [FILE]...", p))),
-            None => exit(Err::<String, String>("Usage: rusttail [FILE]...".to_string())),
+            None => exit(Err::<String, String>(
+                "Usage: rusttail [FILE]...".to_string(),
+            )),
         }
     }
 
     for file_name in files {
-        let mut reader =  match buffered_reader::create(&file_name) {
+        let mut reader = match buffered_reader::create(&file_name) {
             Ok(reader) => reader,
             Err(error) => {
                 exit(Err::<String, String>(error.message.to_string()));
                 return;
-            },
+            }
         };
         println!("{}\n", file_name);
         loop {
